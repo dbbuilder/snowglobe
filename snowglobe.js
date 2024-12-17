@@ -8,7 +8,7 @@ let shakeThreshold = 15;
 
 // Image placeholder for the globe background
 const globeImage = new Image();
-globeImage.src = "https://via.placeholder.com/300x300"; // Replace with your image URL
+globeImage.src = "mn8.png"; // Replace with your image URL
 
 // Track mouse movement
 let lastMouseX = null;
