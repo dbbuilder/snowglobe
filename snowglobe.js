@@ -16,20 +16,29 @@ let lastMouseY = null;
 
 // Handle motion permissions for iOS
 function requestMotionPermission() {
+  const motionPrompt = document.getElementById("motionPrompt");
   if (typeof DeviceMotionEvent.requestPermission === "function") {
+    // iOS 13+ requires motion permission
     DeviceMotionEvent.requestPermission()
       .then((response) => {
         if (response === "granted") {
           console.log("Motion access granted");
           handleShake();
+          motionPrompt.style.display = "none"; // Hide the prompt
         } else {
-          alert("Motion access denied. Click to try again.");
+          alert(
+            "Motion access denied. Please allow motion to use the shake feature."
+          );
         }
       })
-      .catch((error) => console.error("Permission error:", error));
+      .catch((error) => {
+        console.error("Permission error:", error);
+        alert("An error occurred while requesting motion permission.");
+      });
   } else {
-    // Non-iOS devices or older browsers
+    // For non-iOS devices
     handleShake();
+    motionPrompt.style.display = "none"; // Hide the prompt
   }
 }
 // Initialize snowflakes
@@ -44,7 +53,40 @@ function createSnowflakes() {
     });
   }
 }
+function handleTouchShake() {
+  let lastTouchX = null;
+  let lastTouchY = null;
 
+  canvas.addEventListener("touchmove", (event) => {
+    event.preventDefault(); // Prevent scrolling
+
+    const touch = event.touches[0];
+    const rect = canvas.getBoundingClientRect();
+    const touchX = touch.clientX - rect.left;
+    const touchY = touch.clientY - rect.top;
+
+    const dx = touchX - canvas.width / 2;
+    const dy = touchY - 150;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    if (distance <= 150) {
+      // Only trigger inside the globe
+      if (lastTouchX !== null && lastTouchY !== null) {
+        const deltaX = Math.abs(touchX - lastTouchX);
+        const deltaY = Math.abs(touchY - lastTouchY);
+
+        if (deltaX + deltaY > shakeThreshold) {
+          resetSnowfall();
+        }
+      }
+      lastTouchX = touchX;
+      lastTouchY = touchY;
+    } else {
+      lastTouchX = null;
+      lastTouchY = null;
+    }
+  });
+}
 // Draw the base of the snow globe
 function drawBase() {
   ctx.fillStyle = "#8B4513"; // Wooden base color
@@ -169,6 +211,7 @@ globeImage.onload = () => {
   createSnowflakes();
   handleShake();
   handleMouseShake(); // Add mouse shake handling
+  handleTouchShake(); // For touch
   draw();
 };
 
