@@ -13,27 +13,25 @@ globeImage.src = "https://via.placeholder.com/300x300"; // Replace with your ima
 // Track mouse movement
 let lastMouseX = null;
 let lastMouseY = null;
+
+// Handle motion permissions for iOS
 function requestMotionPermission() {
   if (typeof DeviceMotionEvent.requestPermission === "function") {
-    // iOS 13+ requires user interaction to enable motion sensors
     DeviceMotionEvent.requestPermission()
       .then((response) => {
         if (response === "granted") {
           console.log("Motion access granted");
-          handleShake(); // Start shake detection
+          handleShake();
         } else {
-          alert("Motion access denied. Enable it to use the shake feature.");
+          alert("Motion access denied. Click to try again.");
         }
       })
-      .catch((error) => {
-        console.error("Error requesting motion permission:", error);
-      });
+      .catch((error) => console.error("Permission error:", error));
   } else {
-    // Non-iOS or older versions
+    // Non-iOS devices or older browsers
     handleShake();
   }
 }
-
 // Initialize snowflakes
 function createSnowflakes() {
   for (let i = 0; i < NUM_FLAKES; i++) {
@@ -90,7 +88,6 @@ function drawGlobe() {
 // Simulate shake on mouse movement over the circle
 function handleMouseShake() {
   // Call this function when the user interacts with the page
-  document.addEventListener("click", requestMotionPermission);
   canvas.addEventListener("mousemove", (event) => {
     const rect = canvas.getBoundingClientRect();
     const mouseX = event.clientX - rect.left;
@@ -174,3 +171,6 @@ globeImage.onload = () => {
   handleMouseShake(); // Add mouse shake handling
   draw();
 };
+
+// Request motion permission on the first user click/tap
+document.addEventListener("click", requestMotionPermission);
